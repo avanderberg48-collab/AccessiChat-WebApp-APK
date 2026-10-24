@@ -1,0 +1,34 @@
+name: Mandy Cloud Keepalive
+
+# Keeps Adrian's Mandy cloud computer online 24/7 for free.
+# E2B free plan kills every sandbox after 1 hour, so this watcher
+# reconnects (recreates + auto-restore + autostart) every 8 minutes.
+# Public repo = free unlimited Actions minutes. No secrets needed:
+# the connector endpoint is public and device-scoped.
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: mandy-cloud-keepalive
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Keep cloud computer online
+        run: |
+          for i in $(seq 1 40); do
+            TS=$(date -u +"%Y-%m-%d %H:%M:%S")
+            RES=$(curl -s -m 150 -X POST https://superagent-269bfe30.base44.app/functions/cloudComputer \
+              -H "Content-Type: application/json" \
+              -d '{"action":"boot","device_id":"adrian-phone"}' || echo '{"failed":true}')
+            STATUS=$(echo "$RES" | grep -oE '"status": *"[^"]*"' | head -1)
+            echo "cycle $i at $TS -> $STATUS"
+            sleep 480
+          done
+          echo "watcher run complete $(date -u)"
