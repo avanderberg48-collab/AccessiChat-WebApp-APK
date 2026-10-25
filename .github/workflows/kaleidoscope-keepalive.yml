@@ -1,0 +1,23 @@
+name: Kaleidoscope Radio Keepalive
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: kaleidoscope-keepalive
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Loop boot every 8 minutes
+        run: |
+          for i in $(seq 1 40); do
+            curl -s -m 90 -X POST https://superagent-269bfe30.base44.app/functions/kaleidoscopeRadio \
+              -H "Content-Type: application/json" \
+              -d '{"action":"boot"}' > /dev/null || true
+            sleep 480
+          done
