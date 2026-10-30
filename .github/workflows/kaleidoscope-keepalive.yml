@@ -15,9 +15,9 @@ jobs:
     steps:
       - name: Loop boot every 5 minutes
         run: |
-          for i in $(seq 1 100); do
+          for i in $(seq 1 240); do
             curl -s -m 90 -X POST https://superagent-269bfe30.base44.app/functions/kaleidoscopeRadio \
               -H "Content-Type: application/json" \
               -d '{"action":"boot"}' > /dev/null || true
-            sleep 150
+            sleep 60
           done
